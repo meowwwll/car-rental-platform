@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-9d)+f_0hz2*4qz^q)-0b4f=$u9oj-=_&ag6r_4moz58-(_unyw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['lolayunusova.pythonanywhere.com']
 
 
 # Application definition
@@ -156,3 +156,4 @@ EMAIL_HOST_USER = 'carswapcompany@gmail.com'
 EMAIL_HOST_PASSWORD = 'znla kirt lnjs uoua'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')

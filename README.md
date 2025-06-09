@@ -17,13 +17,4 @@ A Django-based web application that allows users to rent and list cars securely.
 - Leaflet.js for maps
 - Bootstrap or custom styling
 
-## Getting Started
 
-```bash
-git clone https://github.com/meowwwll/car-rental-platform.git
-cd car-rental-platform
-python -m venv venv
-source venv/bin/activate  # or venv\Scripts\activate on Windows
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver

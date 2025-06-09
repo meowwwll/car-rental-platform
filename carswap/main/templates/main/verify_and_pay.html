@@ -1,0 +1,31 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}Підтвердження особи та оплата{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Підтвердження особи та оплата</h2>
+
+    <p><strong>Авто:</strong> {{ rental.car }}</p>
+    <p><strong>Період:</strong> {{ rental.start_datetime|date:"d.m.Y H:i" }} - {{ rental.end_datetime|date:"d.m.Y H:i" }}</p>
+    <p><strong>Ціна:</strong> {{ rental.total_price }} грн</p>
+
+    {% if not request.session.face_verified %}
+        <form method="post" enctype="multipart/form-data" class="mt-4">
+            {% csrf_token %}
+            <label for="photo" class="form-label">Зробіть фото для верифікації:</label>
+            <input type="file" name="photo" accept="image/*" capture="user" required class="form-control mb-3">
+            <button type="submit" class="btn btn-primary">Підтвердити обличчя</button>
+        </form>
+    {% else %}
+        <form method="post" class="mt-4">
+            {% csrf_token %}
+            <input type="hidden" name="pay" value="1">
+            <button type="submit" class="btn btn-success">Оплатити оренду та розблокувати авто</button>
+        </form>
+    {% endif %}
+
+    <a href="{% url 'notifications' %}" class="btn btn-link mt-3">Назад до сповіщень</a>
+</div>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}Оренда авто - CarSwap{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    .card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-title {
+        font-weight: 600;
+    }
+
+    .card img {
+        height: 200px;
+        object-fit: cover;
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+    }
+
+    #map {
+        height: 500px;
+        border-radius: 10px;
+        margin-top: 40px;
+    }
+</style>
+
+<div class="container mt-4">
+    <h1 class="mb-4 text-center fw-bold">Доступні авто для оренди</h1>
+
+    <!-- Форма сортування -->
+    <form method="get" class="mb-4 d-flex justify-content-end">
+        {% if query %}
+            <input type="hidden" name="q" value="{{ query }}">
+        {% endif %}
+        <label class="me-2 fw-semibold">Сортувати:</label>
+        <select name="sort" class="form-select w-auto" onchange="this.form.submit()">
+            <option value="">За замовчуванням</option>
+            <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Ціна ↑</option>
+            <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Ціна ↓</option>
+            <option value="year_asc" {% if sort == 'year_asc' %}selected{% endif %}>Рік ↑</option>
+            <option value="year_desc" {% if sort == 'year_desc' %}selected{% endif %}>Рік ↓</option>
+            <option value="brand_asc" {% if sort == 'brand_asc' %}selected{% endif %}>Марка A–Z</option>
+            <option value="brand_desc" {% if sort == 'brand_desc' %}selected{% endif %}>Марка Z–A</option>
+        </select>
+    </form>
+
+    <!-- Кількість знайдених авто (опціонально) -->
+    <p class="text-muted">Знайдено авто: {{ cars|length }}</p>
+
+    <div class="row">
+        {% for car in cars %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100" onclick="window.location.href='{% url 'car_detail' car.id %}'">
+                {% if car.images.all %}
+                    <img src="{{ car.images.first.image.url }}" class="card-img-top" alt="{{ car.brand }} {{ car.model }}">
+                {% else %}
+                    <img src="{% static 'main/img/no-image.png' %}" class="card-img-top" alt="Немає фото">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ car.brand }} {{ car.model }} ({{ car.year }})</h5>
+                    <p class="text-muted mb-1">{{ car.city }}</p>
+                    <p class="text-primary fw-semibold">{{ car.price_per_hour }} грн/год</p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            <p class="text-center">Наразі немає доступних авто.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Карта з точками авто -->
+    <h2 class="mt-5 mb-3 text-center fw-bold">Карта доступних авто</h2>
+    <div id="map"></div>
+</div>
+
+<!-- JSON з містами та назвами авто -->
+{{ car_map_data|json_script:"car-map-json" }}
+{% endblock %}
+
+{% block scripts %}
+<!-- Leaflet.js -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-XQoYMqMTK8LvdlDXv1nP3G5wluKQ8gZHMoenYf1BigM=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-o9N1j7kGEXzjGhG2MxDZJVRRx1G3EyGkP5j3GnL3/jM=" crossorigin=""></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const map = L.map('map').setView([48.3794, 31.1656], 6);  // Центр України
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        const carData = JSON.parse(document.getElementById('car-map-json').textContent);
+
+        carData.forEach(car => {
+            const query = encodeURIComponent(car.city);
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        const lat = data[0].lat;
+                        const lon = data[0].lon;
+
+                        L.marker([lat, lon]).addTo(map)
+                            .bindPopup(`<strong>${car.brand} ${car.model}</strong><br>${car.city}`);
+                    }
+                })
+                .catch(error => {
+                    console.error('Помилка геокодування міста:', car.city, error);
+                });
+        });
+    });
+</script>
+{% endblock %}

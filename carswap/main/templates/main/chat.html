@@ -1,0 +1,100 @@
+{% extends "main/base.html" %}
+{% block title %}Чат{% endblock %}
+
+{% block content %}
+<style>
+    .chat-message {
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        border-radius: 12px;
+        max-width: 75%;
+        word-wrap: break-word;
+        animation: fadeIn 0.4s ease-in-out;
+    }
+
+    .chat-message.user {
+        background-color: #d1e7ff;
+        margin-left: auto;
+        text-align: right;
+    }
+
+    .chat-message.other {
+        background-color: #f1f1f1;
+        text-align: left;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="container mt-4">
+    <h2>Чат з {{ chat_with }}</h2>
+    <p class="text-muted">Сторінка чату для авто {{ rental.car }}</p>
+
+    <div id="chat-messages" class="border p-3 mb-3" style="height: 371px; overflow-y: auto; background-color: #f9f9f9; border-radius: 8px;">
+        {% for message in messages %}
+            <div class="chat-message {% if message.sender == user %}user{% else %}other{% endif %}">
+                <strong>{{ message.sender.username }}</strong><br>
+                {{ message.content }}<br>
+                <small class="text-muted">{{ message.timestamp|date:"d.m.Y H:i" }}</small>
+            </div>
+        {% empty %}
+            <p class="text-muted">Немає повідомлень.</p>
+        {% endfor %}
+    </div>
+
+    <form id="message-form" method="post">
+        {% csrf_token %}
+        <div class="input-group">
+            <input type="text" name="content" class="form-control" placeholder="Напишіть повідомлення..." required>
+            <button type="submit" class="btn btn-primary">Надіслати</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const chatMessages = document.getElementById('chat-messages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    document.getElementById('message-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const formData = new FormData(this);
+
+        fetch("{% url 'send_message' rental.id %}", {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('chat-message', 'user');
+
+                const now = new Date();
+                const formatted = now.toLocaleString('uk-UA', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+
+                messageDiv.innerHTML = `
+                    <strong>${data.sender}</strong><br>
+                    ${data.content}<br>
+                    <small class="text-muted">${formatted}</small>
+                `;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                document.querySelector('input[name="content"]').value = '';
+            } else {
+                alert('Помилка при відправленні повідомлення');
+            }
+        })
+        .catch(error => {
+            alert('Помилка серверу');
+        });
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}Мої авто — CarSwap{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    .card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-title {
+        font-weight: 600;
+    }
+
+    .card img {
+        height: 200px;
+        object-fit: cover;
+        border-top-left-radius: 0.5rem;
+        border-top-right-radius: 0.5rem;
+    }
+</style>
+
+<div class="container mt-4">
+    <h1 class="mb-4 text-center fw-bold">Мої авто</h1>
+    <div class="row">
+        {% for car in cars %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100" onclick="window.location.href='{% url 'car_edit' car.id %}'">
+                {% if car.images.all %}
+                    <img src="{{ car.images.first.image.url }}" class="card-img-top" alt="{{ car.brand }} {{ car.model }}">
+                {% else %}
+                    <img src="{% static 'main/img/no-image.png' %}" class="card-img-top" alt="Немає фото">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ car.brand }} {{ car.model }} ({{ car.year }})</h5>
+                    <p class="text-muted mb-1">{{ car.city }}</p>
+                    <p class="text-primary fw-semibold">{{ car.price_per_hour }} грн/год</p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            <p class="text-center">У вас ще немає опублікованих авто.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

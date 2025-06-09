@@ -1,0 +1,171 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}Головна - CarSwap{% endblock %}
+
+{% block content %}
+<style>
+     .hero {
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3)),
+                    url("{% static 'main/images/hero4.jpg' %}") center/cover no-repeat;
+        height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: #f8f9fa;
+        font-size: 1.8rem;
+        font-weight: bold;
+        animation: fadeIn 0.6s ease-in-out;
+    }
+
+    .hero h1 {
+        font-size: 2rem;
+        font-weight: 600;
+        text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .form-control {
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        transition: 0.3s;
+    }
+
+    .form-control:focus {
+        border-color: #0052D4;
+        box-shadow: 0 0 5px rgba(0, 82, 212, 0.5);
+    }
+
+    .btn {
+        padding: 7px 14px;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 6px;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .btn-primary {
+        background: #0052D4;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: #4364F7;
+        transform: scale(1.05);
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .info-section {
+        background: #fdfdfd;
+        border-radius: 20px;
+        padding: 40px 30px;
+        margin-top: 50px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        animation: fadeIn 0.7s ease-in-out;
+    }
+
+    .info-section h2 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #0052D4;
+        margin-bottom: 20px;
+    }
+
+    .info-section h5 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-top: 20px;
+        color: #333;
+    }
+
+    .info-section ul {
+        padding-left: 1.3rem;
+    }
+
+    .info-section li {
+        margin-bottom: 10px;
+        font-size: 1rem;
+        color: #555;
+        position: relative;
+        padding-left: 1.5em;
+    }
+
+    .info-section li::before {
+        content: "✔️";
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+
+    .info-section p {
+        font-size: 1rem;
+        color: #666;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+        .info-section {
+            padding: 25px 20px;
+        }
+
+        .info-section h2 {
+            font-size: 1.4rem;
+        }
+    }
+</style>
+
+<div class="hero">
+    <h1>Знайди або надай авто в оренду</h1>
+</div>
+
+<div class="container mt-5">
+    <form class="d-flex" action="{% url 'rent' %}" method="get">
+        <input class="form-control me-2" type="search" name="q" placeholder="Введіть марку або модель...">
+        <button class="btn btn-primary" type="submit">Знайти</button>
+    </form>
+
+    <div class="info-section container">
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <h2>🚗 Що таке CarSwap?</h2>
+                <p>
+                    CarSwap - це сучасна P2P-платформа з інтелектуальною верифікацією, що поєднує водіїв і власників авто в Україні. Ви можете швидко знайти авто в оренду або здавати власне авто й отримувати прибуток.
+                </p>
+                <ul>
+                    <li>Швидка реєстрація та перевірка водія</li>
+                    <li>Face ID верифікація перед орендою</li>
+                    <li>Миттєві повідомлення та зручне керування орендою</li>
+                </ul>
+            </div>
+            <div class="col-md-6 mb-4">
+                <h2>💡 Поради для користувачів</h2>
+                <h5>Орендарям:</h5>
+                <ul>
+                    <li>Оберіть авто, яке підходить вам за класом і містом</li>
+                    <li>Уважно читайте опис і перевіряйте умови</li>
+                    <li>Готуйтеся до Face ID перед розблокуванням авто</li>
+                </ul>
+                <h5>Власникам авто:</h5>
+                <ul>
+                    <li>Додавайте реальні фото та актуальний опис</li>
+                    <li>Швидко реагуйте на запити користувачів</li>
+                    <li>Використовуйте Face ID для безпечної передачі авто</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+
+</div>
+{% endblock %}

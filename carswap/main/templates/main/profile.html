@@ -1,0 +1,242 @@
+{% extends "main/base.html" %}
+{% load static %}
+{% load status_filters %}
+
+
+{% block content %}
+<style>
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .fade-in {
+    animation: fadeIn 0.4s ease-out;
+  }
+
+  .btn-blue {
+    background-color: #0052D4;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+  }
+
+  .btn-blue:hover {
+    background-color: #4364F7;
+    transform: scale(1.05);
+  }
+
+  .btn-red {
+    background-color: #dc3545;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-block;
+    width: auto;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  .btn-red:hover {
+    background-color: #c82333;
+    transform: scale(1.03);
+  }
+
+  .input-box {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    width: 100%;
+    transition: border-color 0.3s;
+  }
+
+  .input-box:focus {
+    border-color: #0052D4;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 82, 212, 0.3);
+  }
+
+  .w-auto {
+    width: auto;
+  }
+
+  .max-w-xs {
+    max-width: 20rem;
+  }
+
+  .top-spacing {
+    margin-top: 3rem; /* было 6rem */
+  }
+
+  .section-spacing {
+    margin-top: 1.5rem; /* чуть меньше */
+  }
+
+  .form-spacing {
+    margin-top: 2rem;
+  }
+
+  body {
+    background-color: white; /* сделаем фон белым везде */
+  }
+
+  .history-card {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+</style>
+
+<div class="max-w-2xl mx-auto top-spacing p-10 bg-white shadow-xl rounded-2xl text-center">
+  <h2 class="text-2xl font-bold text-gray-800 mb-12">Вітаємо, {{ profile.full_name|default:user.username }}!</h2>
+
+  <div class="space-y-10 text-lg text-gray-700 text-left">
+    <p><strong>ПІБ:</strong> {{ profile.full_name }}</p>
+
+    <!-- Email -->
+    <div class="space-y-2">
+      <p><strong>Email (використовується як логін):</strong> {{ user.email }}</p>
+      <p class="text-sm text-gray-600">Якщо бажаєте, можете вказати нову пошту для сповіщень. Ваша основна пошта (логін) залишиться без змін.</p>
+
+      <div class="mt-2 flex flex-col items-start space-y-2">
+        <label for="email" class="block font-semibold">Нова електронна пошта:</label>
+        <input type="email" id="email" name="email" class="input-box w-auto max-w-xs">
+      </div>
+    </div>
+
+    {% if profile.birth_date %}
+      <p class="section-spacing"><strong>Дата народження:</strong> {{ profile.birth_date }}</p>
+    {% endif %}
+
+    {% if profile.driver_license_series and profile.driver_license_number %}
+      <p class="section-spacing"><strong>Посвідчення водія:</strong> {{ profile.driver_license_series }} {{ profile.driver_license_number }}</p>
+    {% endif %}
+
+    {% if profile.selfie %}
+    <div class="flex flex-col items-center section-spacing">
+      <p class="font-semibold mb-2">Фото для інтелектуальної верифікації:</p>
+      <img src="{{ profile.selfie.url }}" alt="Selfie" class="w-48 h-48 rounded-xl shadow-md object-cover border">
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Форма -->
+  <form method="POST" enctype="multipart/form-data" class="mt-8" id="updateForm">
+    {% csrf_token %}
+
+    <!-- Фото -->
+    <div class="flex flex-col items-start space-y-2 form-spacing">
+      <label for="selfie" class="block font-semibold">Завантажити нове фото:</label>
+
+      <!-- Кастомная кнопка для загрузки фото -->
+      <label for="selfieInput" class="btn btn-outline-primary">
+        Обрати фото
+      </label>
+
+      <!-- Скрытый input -->
+      <input type="file" id="selfieInput" name="selfie" class="form-control" accept="image/*" style="display: none;">
+
+      <!-- Отображение выбранного файла -->
+      <div id="fileNames" class="form-text mt-2 text-muted">Файл не вибрано</div>
+    </div>
+
+    <!-- Кнопка "Зберегти зміни" та "Вийти" -->
+    <div class="flex justify-center gap-4 form-spacing pb-4 mb-4">
+      <button type="submit" id="saveButton" class="btn-blue w-40">Зберегти зміни</button>
+      <a href="{% url 'logout' %}" class="btn-red w-40 text-center ml-6">Вийти</a>
+    </div>
+  </form>
+
+    <!-- Кнопка "Видалити акаунт" -->
+      <div class="text-center">
+        <form method="POST" action="{% url 'delete_account' %}" onsubmit="return confirm('Ви впевнені, що хочете видалити акаунт? Цю дію неможливо скасувати.');">
+          {% csrf_token %}
+          <button type="submit" class="btn-red">Видалити акаунт</button>
+        </form>
+      </div>
+</div>
+
+
+
+  <!-- ІСТОРІЯ ВЗЯТИХ АВТО -->
+  <div class="max-w-3xl mx-auto top-spacing pt-10 mt-16 bg-gray-50 shadow-md p-6 rounded-xl">
+    <h3 class="text-xl font-semibold mb-6 text-gray-800 text-center">Історія взятих авто в оренду</h3>
+    {% if rented_cars %}
+      <ul class="space-y-4">
+        {% for rental in rented_cars %}
+          <li class="border p-4 rounded-md bg-white shadow-sm">
+            <div class="space-y-1 text-gray-800 px-2 md:px-6">
+            <p><strong>Авто:</strong> {{ rental.car }}</p>
+            <p><strong>Період:</strong> з {{ rental.start_datetime|date:"d.m.Y H:i" }} до {{ rental.end_datetime|date:"d.m.Y H:i" }}</p>
+            <p><strong>Статус:</strong> <span class="font-semibold">{{ rental.status|status_uk }}</span></p>
+           </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-gray-600 text-center">Немає історії оренди.</p>
+    {% endif %}
+  </div>
+
+  <!-- ІСТОРІЯ НАДАНИХ АВТО -->
+
+  <div class="max-w-3xl mx-auto top-spacing pt-10 mt-16 bg-gray-50 shadow-md p-6 rounded-xl">
+    <h3 class="text-xl font-semibold mb-6 text-gray-800 text-center">Історія наданих авто в оренду</h3>
+    {% if given_cars %}
+      <ul class="space-y-4">
+        {% for rental in given_cars %}
+           <li class="border p-4 rounded-md bg-white shadow-sm">
+            <div class="space-y-1 text-gray-800 px-2 md:px-6">
+            <p><strong>Авто:</strong> {{ rental.car }}</p>
+            <p><strong>Орендар:</strong> {{ rental.renter.username }}</p>
+            <p><strong>Період:</strong> з {{ rental.start_datetime|date:"d.m.Y H:i" }} до {{ rental.end_datetime|date:"d.m.Y H:i" }}</p>
+            <p><strong>Статус:</strong> <span class="font-semibold">{{ rental.status|status_uk }}</span></p>
+            </div>
+           </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-gray-600 text-center">Немає наданих авто в оренду.</p>
+    {% endif %}
+  </div>
+
+
+<!-- JS логіка -->
+<script>
+  function showSaveButton() {
+    const save = document.getElementById("saveWrapper");
+    if (save.classList.contains("hidden")) {
+      save.classList.remove("hidden");
+      save.classList.add("fade-in");
+    }
+  }
+
+  document.getElementById('selfieInput').addEventListener('change', function() {
+    const count = this.files.length;
+    const fileNamesContainer = document.getElementById('fileNames');
+    if (count === 0) {
+      fileNamesContainer.textContent = 'Файл не вибрано';
+    } else {
+      fileNamesContainer.textContent = `Обрано ${count} файл`;
+    }
+    showSaveButton();
+  });
+
+  document.addEventListener('input', function (e) {
+    if (e.target.id === 'email') {
+      showSaveButton();
+    }
+  });
+</script>
+{% endblock %}

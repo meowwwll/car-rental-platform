@@ -1,0 +1,100 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}Редагувати {{ car.brand }} {{ car.model }} — CarSwap{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="fw-bold mb-4">Редагувати {{ car.brand }} {{ car.model }} ({{ car.year }})</h2>
+
+
+    <form method="post" enctype="multipart/form-data" class="row g-3 justify-content-center">
+        {% csrf_token %}
+
+        <div class="col-md-5">
+            <label for="id_brand" class="form-label">Марка</label>
+            {{ car_form.brand }}
+        </div>
+
+        <div class="col-md-5">
+            <label for="id_model" class="form-label">Модель</label>
+            {{ car_form.model }}
+        </div>
+
+        <div class="col-md-4">
+            <label for="id_year" class="form-label">Рік випуску</label>
+            {{ car_form.year }}
+        </div>
+
+        <div class="col-md-6">
+            <label for="id_city" class="form-label">Місце розташування авто</label>
+            {{ car_form.city }}
+        </div>
+
+        <div class="col-md-5">
+            <label for="id_price_per_day" class="form-label">Ціна за день</label>
+            {{ car_form.price_per_day }}
+        </div>
+
+        <div class="col-md-5">
+            <label for="id_price_per_hour" class="form-label">Ціна за годину</label>
+            {{ car_form.price_per_hour }}
+        </div>
+
+        <div class="col-md-10">
+            <label for="id_description" class="form-label">Опис авто</label>
+            {{ car_form.description }}
+        </div>
+
+        <div class="col-md-4">
+            <label for="id_fuel_type" class="form-label">Тип пального</label>
+            {{ car_form.fuel_type }}
+        </div>
+
+        <div class="col-md-4">
+            <label for="id_transmission" class="form-label">Коробка передач</label>
+            {{ car_form.transmission }}
+        </div>
+
+        <div class="col-md-4">
+            <label for="id_seats" class="form-label">Кількість місць</label>
+            {{ car_form.seats }}
+        </div>
+
+        <div class="col-md-10">
+            <label for="images" class="form-label">Додати нові фото:</label>
+            <input type="file" name="images" multiple class="form-control">
+        </div>
+
+        <div class="col-md-10">
+            <button type="submit" class="btn btn-success">Зберегти зміни</button>
+        </div>
+    </form>
+
+    <hr class="my-4">
+
+    <h5 class="mt-4">Поточні фото:</h5>
+    <div class="row">
+        {% for image in car.images.all %}
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <img src="{{ image.image.url }}" class="card-img-top" alt="Фото">
+                <div class="card-body text-center">
+                    <label>
+                        <input type="checkbox" name="delete_images" form="delete-form" value="{{ image.id }}">
+                        Видалити
+                    </label>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p>Немає фото.</p>
+        {% endfor %}
+    </div>
+
+    <form method="post" action="{% url 'delete_car' car.id %}" onsubmit="return confirm('Ви впевнені, що хочете видалити це авто?');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger mt-4">Видалити авто</button>
+    </form>
+</div>
+{% endblock %}

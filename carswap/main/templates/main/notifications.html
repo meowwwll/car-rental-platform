@@ -1,0 +1,68 @@
+{% extends "main/base.html" %}
+{% load static %}
+
+{% block title %}Ваші сповіщення{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Сповіщення</h2>
+    {% if notifications %}
+        <ul class="list-group">
+            {% for notification in notifications %}
+                <li class="list-group-item {% if not notification.is_read %}list-group-item-warning{% endif %}">
+                    <div>
+                        <p class="mb-1">{{ notification.message }}</p>
+                        <small class="text-muted">{{ notification.created_at|date:"d.m.Y H:i" }}</small>
+
+                        {% if notification.rental_request %}
+                            <div class="mt-2">
+                                <strong>Авто:</strong> {{ notification.rental_request.car }}<br>
+                                <strong>Орендар:</strong> {{ notification.rental_request.renter.username }}<br>
+                                <strong>З:</strong> {{ notification.rental_request.start_datetime|date:"d.m.Y H:i" }}<br>
+                                <strong>До:</strong> {{ notification.rental_request.end_datetime|date:"d.m.Y H:i" }}<br>
+                                <strong>Сума:</strong> {{ notification.rental_request.total_price }} грн<br>
+                                <strong>Статус:</strong> {{ notification.rental_request.get_status_display }}
+                            </div>
+                            {% if notification.rental_request.status == 'approved' %}
+                                <div class="mt-2">
+
+                                    <a href="{% url 'chat_view' notification.rental_request.id %}" class="btn btn-primary btn-sm position-relative">
+                                        Перейти в чат
+                                        {% if notification.unread_count > 0 %}
+                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                                {{ notification.unread_count }}
+                                            </span>
+                                        {% endif %}
+                                    </a>
+
+                                    {% if user == notification.rental_request.renter %}
+                                        {% if not notification.rental_request.is_unlocked %}
+                                            <a href="{% url 'verify_and_pay' notification.rental_request.id %}" class="btn btn-outline-success btn-sm">🔓 Розблокувати авто</a>
+                                        {% else %}
+                                            <form method="post" action="{% url 'complete_rental' notification.rental_request.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">🏁 Завершити оренду</button>
+                                            </form>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+
+
+                            {% if notification.rental_request.status == 'pending' %}
+                                <form method="post" action="{% url 'respond_to_rental' notification.rental_request.id %}" class="mt-2 d-flex gap-2">
+                                    {% csrf_token %}
+                                    <button type="submit" name="action" value="approve" class="btn btn-success btn-sm">Підтвердити</button>
+                                    <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm">Відхилити</button>
+                                </form>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>У вас поки що немає сповіщень.</p>
+    {% endif %}
+</div>
+{% endblock %}

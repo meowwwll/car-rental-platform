@@ -1,0 +1,69 @@
+{% extends "main/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Оренда авто: {{ car.brand }} {{ car.model }}</h2>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <form method="post" class="p-4 border rounded shadow-sm bg-light">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    {{ form.start_datetime.label_tag }}
+                    {{ form.start_datetime }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form.end_datetime.label_tag }}
+                    {{ form.end_datetime }}
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mt-3">Надіслати запит</button>
+            </form>
+
+            <p class="mt-4 text-center">
+                <strong>Ціна за оренду:</strong>
+                <span id="total-price">0 грн</span>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculatePrice() {
+        const startInput = document.getElementById('id_start_datetime');
+        const endInput = document.getElementById('id_end_datetime');
+        const pricePerHour = {{ car.price_per_hour }};
+        const pricePerDay = {{ car.price_per_day }};
+
+        if (startInput.value && endInput.value) {
+            const start = new Date(startInput.value);
+            const end = new Date(endInput.value);
+            const ms = end - start;
+
+            if (ms > 0) {
+                const totalHours = Math.ceil(ms / (1000 * 60 * 60));
+                const fullDays = Math.floor(totalHours / 24);
+                const remainingHours = totalHours % 24;
+
+                const totalPrice = fullDays * pricePerDay + remainingHours * pricePerHour;
+                document.getElementById('total-price').innerText = `${totalPrice} грн`;
+            } else {
+                document.getElementById('total-price').innerText = '0 грн';
+            }
+        }
+    }
+
+    document.getElementById('id_start_datetime').addEventListener('change', calculatePrice);
+    document.getElementById('id_end_datetime').addEventListener('change', calculatePrice);
+</script>
+{% endblock %}
